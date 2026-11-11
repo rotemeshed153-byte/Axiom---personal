@@ -1,49 +1,123 @@
+
 <!DOCTYPE html>
-
 <html lang="he" dir="rtl">
-
 <head>
-
-  <meta charset="UTF-8">
-
-  <meta name="viewport"
-
-        content="width=device-width, initial-scale=1">
-
-  <title>AXIOM | Personal AI</title>
-
-  <style>
-
-    body {
-
-      background: #050b16;
-
-      color: #00e5ff;
-
-      font-family: Arial, sans-serif;
-
-      text-align: center;
-
-      padding: 60px 20px;
-
-    }
-
-    .core {
-
-      width: 160px;
-
-      height: 160px;
-
-      border: 3px solid #00e5ff;
-
-      border-radius: 50%;
-
-      margin: 40px auto;
-
-      box-shadow: 0 0 50px #00e5ff77;
-
-      display: grid;
-
-      place-items: center;
-
-      animation: pulse 2s infinite alternate;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AXIOM | Personal AI</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#050b16;color:#e8faff;
+ font-family:Arial,sans-serif;
+ min-height:100dvh;display:flex;
+ justify-content:center;align-items:center;
+}
+.app{width:100%;max-width:550px;padding:24px}
+h1{text-align:center;letter-spacing:5px;color:#00e5ff}
+.status{text-align:center;color:#6ceacb;font-size:13px}
+.core{
+ width:170px;height:170px;margin:35px auto;
+ border:3px solid #00e5ff;border-radius:50%;
+ display:grid;place-items:center;
+ box-shadow:0 0 45px #00e5ff77;
+ animation:pulse 2s infinite alternate;
+}
+.core span{font-size:48px;color:#00e5ff}
+@keyframes pulse{
+ from{box-shadow:0 0 15px #00e5ff55;transform:scale(.96)}
+ to{box-shadow:0 0 65px #00e5ffaa;transform:scale(1.04)}
+}
+.chat{
+ background:#0b1729;border:1px solid #17435c;
+ border-radius:16px;padding:15px;height:240px;
+ overflow-y:auto;display:flex;flex-direction:column;
+ gap:12px;
+}
+.msg{padding:11px;border-radius:12px;line-height:1.5}
+.ai{background:#12334a;align-self:flex-start}
+.user{background:#204d69;align-self:flex-end}
+.controls{display:flex;gap:8px;margin-top:15px}
+input{
+ flex:1;min-width:0;padding:13px;
+ background:#101e30;color:white;
+ border:1px solid #27627b;border-radius:10px;
+}
+button{
+ background:#00cce8;color:#00121d;border:0;
+ border-radius:10px;padding:12px;font-weight:bold;
+ cursor:pointer;
+}
+.note{text-align:center;color:#8299aa;font-size:12px}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>AXIOM</h1>
+<div class="status" id="status">● SYSTEM ONLINE</div>
+<div class="core"><span>◈</span></div>
+<div class="chat" id="chat">
+<div class="msg ai">שלום. אני AXIOM. הממשק שלך מוכן.</div>
+</div>
+<div class="controls">
+<input id="message" placeholder="כתוב פקודה ל-AXIOM">
+<button onclick="send()">שלח</button>
+<button onclick="listen()">🎙️</button>
+</div>
+<p class="note">AXIOM V1 — PERSONAL INTERFACE</p>
+</div>
+<script>
+const chat=document.getElementById("chat");
+const input=document.getElementById("message");
+const statusEl=document.getElementById("status");
+function add(text,who){
+ const el=document.createElement("div");
+ el.className="msg "+who;a
+ el.textContent=text;
+ chat.appendChild(el);
+ chat.scrollTop=chat.scrollHeight;
+}
+function speak(text){
+ if(!("speechSynthesis" in window))return;
+ speechSynthesis.cancel();
+ const voice=new SpeechSynthesisUtterance(text);
+ voice.lang="he-IL";
+ speechSynthesis.speak(voice);
+}
+function send(){
+ const text=input.value.trim();
+ if(!text)return;
+ add(text,"user");
+ input.value="";
+ let answer="קיבלתי את ההודעה שלך. בקרוב אחובר למנוע AI.";
+ if(text.includes("שלום"))answer="שלום! AXIOM לשירותך.";
+ if(text.includes("מי אתה"))answer="אני AXIOM, העוזר האישי שלך.";
+ if(text.includes("שעה"))
+ answer="השעה עכשיו "+new Date().toLocaleTimeString("he-IL");
+ add(answer,"ai");
+ speak(answer);
+}
+function listen(){
+ const SpeechRecognition=
+ window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SpeechRecognition){
+  add("זיהוי דיבור אינו נתמך בדפדפן הזה.","ai");
+  return;
+ }
+ const recognition=new SpeechRecognition();
+ recognition.lang="he-IL";
+ recognition.onstart=()=>statusEl.textContent="● LISTENING";
+ recognition.onend=()=>statusEl.textContent="● SYSTEM ONLINE";
+ recognition.onerror=()=>add("לא הצלחתי לקלוט דיבור.","ai");
+ recognition.onresult=e=>{
+  input.value=e.results[0][0].transcript;
+  send();
+ };
+ recognition.start();
+}
+input.addEventListener("keydown",e=>{
+ if(e.key==="Enter")send();
+});
+</script>
+</body>
+</html>
